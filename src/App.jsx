@@ -1,122 +1,91 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from "react";
+import Home from "./pages/Home";
+import Host from "./pages/Host";
+import Join from "./pages/Join";
+import Lobby from "./pages/Lobby";
+import Game from "./pages/Game";
+import Vote from "./pages/Vote";
+import Results from "./pages/Results";
+import LanguageSwitcher from "./components/LanguageSwitcher";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [screen, setScreen] = useState("home");
+  const [roomCode, setRoomCode] = useState("");
+  const [playerName, setPlayerName] = useState("");
+  const [isHost, setIsHost] = useState(false);
+
+  // Auto-route to join screen if invite link contains ?code=
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    if (code) {
+      setIsHost(false);
+      setScreen("join");
+    }
+  }, []);
+
+  const nav = (s) => setScreen(s);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    <div style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+      <LanguageSwitcher />
+      {screen === "home" && (
+        <Home
+          onHost={() => { setIsHost(true); nav("host"); }}
+          onJoin={() => { setIsHost(false); nav("join"); }}
+        />
+      )}
+      {screen === "host" && (
+        <Host
+          playerName={playerName}
+          setPlayerName={setPlayerName}
+          setRoomCode={setRoomCode}
+          onEnterLobby={() => nav("lobby")}
+        />
+      )}
+      {screen === "join" && (
+        <Join
+          playerName={playerName}
+          setPlayerName={setPlayerName}
+          roomCode={roomCode}
+          setRoomCode={setRoomCode}
+          onEnterLobby={() => nav("lobby")}
+        />
+      )}
+      {screen === "lobby" && (
+        <Lobby
+          roomCode={roomCode}
+          playerName={playerName}
+          isHost={isHost}
+          onStartGame={() => nav("game")}
+        />
+      )}
+      {screen === "game" && (
+        <Game
+          roomCode={roomCode}
+          playerName={playerName}
+          isHost={isHost}
+          onEndGame={() => nav("home")}
+          onVote={() => nav("vote")}
+        />
+      )}
+      {screen === "vote" && (
+        <Vote
+          roomCode={roomCode}
+          playerName={playerName}
+          isHost={isHost}
+          onResults={() => nav("results")}
+        />
+      )}
+      {screen === "results" && (
+        <Results
+          roomCode={roomCode}
+          playerName={playerName}
+          isHost={isHost}
+          onNewRound={() => nav("game")}
+          onEndGame={() => nav("home")}
+        />
+      )}
+    </div>
+  );
 }
-
-export default App
