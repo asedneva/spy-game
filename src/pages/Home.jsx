@@ -59,7 +59,7 @@ export default function Home({ onHost, onJoin }) {
 
         <div style={styles.footer}>
           <a
-            href="https://www.patreon.com/"
+            href="https://patreon.com/SpyGame?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink"
             target="_blank"
             style={{ ...styles.footerLink, textDecoration: isPatreonHovered ? "underline" : "none" }}
             onMouseEnter={() => setIsPatreonHovered(true)}
