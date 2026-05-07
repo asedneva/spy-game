@@ -6,6 +6,9 @@ export default function Home({ onHost, onJoin }) {
   const [showJoin, setShowJoin] = useState(false);
   const [isPatreonHovered, setIsPatreonHovered] = useState(false);
   const [isEmailHovered, setIsEmailHovered] = useState(false);
+  const [isAboutHovered, setIsAboutHovered] = useState(false);
+  const [isPrivacyHovered, setIsPrivacyHovered] = useState(false);
+  const [isContactHovered, setIsContactHovered] = useState(false);
   const { t } = useLanguage();
 
   return (
@@ -61,6 +64,7 @@ export default function Home({ onHost, onJoin }) {
           <a
             href="https://patreon.com/SpyGame?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink"
             target="_blank"
+            rel="noreferrer"
             style={{ ...styles.footerLink, textDecoration: isPatreonHovered ? "underline" : "none" }}
             onMouseEnter={() => setIsPatreonHovered(true)}
             onMouseLeave={() => setIsPatreonHovered(false)}
@@ -75,6 +79,33 @@ export default function Home({ onHost, onJoin }) {
             onMouseLeave={() => setIsEmailHovered(false)}
           >
             contact@spygame.win
+          </a>
+          <span style={styles.footerText}>·</span>
+          <a
+            href="/about"
+            style={{ ...styles.footerLink, textDecoration: isAboutHovered ? "underline" : "none" }}
+            onMouseEnter={() => setIsAboutHovered(true)}
+            onMouseLeave={() => setIsAboutHovered(false)}
+          >
+            About
+          </a>
+          <span style={styles.footerText}>·</span>
+          <a
+            href="/privacy"
+            style={{ ...styles.footerLink, textDecoration: isPrivacyHovered ? "underline" : "none" }}
+            onMouseEnter={() => setIsPrivacyHovered(true)}
+            onMouseLeave={() => setIsPrivacyHovered(false)}
+          >
+            Privacy
+          </a>
+          <span style={styles.footerText}>·</span>
+          <a
+            href="/contact"
+            style={{ ...styles.footerLink, textDecoration: isContactHovered ? "underline" : "none" }}
+            onMouseEnter={() => setIsContactHovered(true)}
+            onMouseLeave={() => setIsContactHovered(false)}
+          >
+            Contact
           </a>
         </div>
       </div>

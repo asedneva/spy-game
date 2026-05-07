@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import Home from "./pages/Home";
+import About from "./pages/About";
+import Privacy from "./pages/Privacy";
+import Contact from "./pages/Contact";
 import Host from "./pages/Host";
 import Join from "./pages/Join";
 import Lobby from "./pages/Lobby";
@@ -10,12 +13,32 @@ import LanguageSwitcher from "./components/LanguageSwitcher";
 
 export default function App() {
   const [screen, setScreen] = useState("home");
+  const [staticPage, setStaticPage] = useState("");
   const [roomCode, setRoomCode] = useState("");
   const [playerName, setPlayerName] = useState("");
   const [isHost, setIsHost] = useState(false);
 
-  // Auto-route to join screen if invite link contains ?code=
   useEffect(() => {
+    const path = window.location.pathname.toLowerCase();
+
+    if (path === "/about") {
+      setStaticPage("about");
+      return;
+    }
+
+    if (path === "/privacy") {
+      setStaticPage("privacy");
+      return;
+    }
+
+    if (path === "/contact") {
+      setStaticPage("contact");
+      return;
+    }
+
+    setStaticPage("");
+
+    // Auto-route to join screen if invite link contains ?code=
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
     if (code) {
@@ -25,6 +48,18 @@ export default function App() {
   }, []);
 
   const nav = (s) => setScreen(s);
+
+  if (staticPage === "about") {
+    return <About />;
+  }
+
+  if (staticPage === "privacy") {
+    return <Privacy />;
+  }
+
+  if (staticPage === "contact") {
+    return <Contact />;
+  }
 
   return (
     <div style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
