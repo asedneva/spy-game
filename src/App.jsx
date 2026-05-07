@@ -13,53 +13,24 @@ import LanguageSwitcher from "./components/LanguageSwitcher";
 
 export default function App() {
   const [screen, setScreen] = useState("home");
-  const [staticPage, setStaticPage] = useState("");
   const [roomCode, setRoomCode] = useState("");
   const [playerName, setPlayerName] = useState("");
   const [isHost, setIsHost] = useState(false);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    const path = window.location.pathname.toLowerCase();
-
-    if (path === "/about") {
-      setStaticPage("about");
-      return;
-    }
-
-    if (path === "/privacy") {
-      setStaticPage("privacy");
-      return;
-    }
-
-    if (path === "/contact") {
-      setStaticPage("contact");
-      return;
-    }
-
-    setStaticPage("");
-
-    // Auto-route to join screen if invite link contains ?code=
+    const path = window.location.pathname;
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
-    if (code) {
-      setIsHost(false);
-      setScreen("join");
-    }
+
+    if (path === "/about") { setScreen("about"); return; }
+    if (path === "/privacy") { setScreen("privacy"); return; }
+    if (path === "/contact") { setScreen("contact"); return; }
+    if (code) { setIsHost(false); setScreen("join"); }
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const nav = (s) => setScreen(s);
-
-  if (staticPage === "about") {
-    return <About />;
-  }
-
-  if (staticPage === "privacy") {
-    return <Privacy />;
-  }
-
-  if (staticPage === "contact") {
-    return <Contact />;
-  }
 
   return (
     <div style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
@@ -70,6 +41,9 @@ export default function App() {
           onJoin={() => { setIsHost(false); nav("join"); }}
         />
       )}
+      {screen === "about" && <About />}
+      {screen === "privacy" && <Privacy />}
+      {screen === "contact" && <Contact />}
       {screen === "host" && (
         <Host
           playerName={playerName}
