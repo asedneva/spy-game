@@ -21,6 +21,7 @@ export function pickLocation(usedLocations = []) {
 
 // Pick one random spy from the player list.
 export function pickSpy(players) {
+  if (!players || players.length === 0) throw new Error("pickSpy called with empty player list");
   return players[Math.floor(Math.random() * players.length)];
 }
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ref, onValue, update } from "firebase/database";
+import { ref, onValue, update, onDisconnect } from "firebase/database";
 import { db } from "../firebase";
 import { calculateVoteResult, allVotesCast } from "../gameUtils";
 import heroLogo from "../assets/hero.png";
@@ -15,6 +15,9 @@ export default function Vote({ roomCode, playerName, isHost, onResults }) {
   const { t } = useLanguage();
 
   useEffect(() => {
+    const presenceRef = ref(db, `rooms/${roomCode}/players/${playerName}`);
+    onDisconnect(presenceRef).remove();
+
     const unsub = onValue(ref(db, `rooms/${roomCode}`), snap => {
       if (!snap.exists()) return;
       const room = snap.val();
@@ -30,6 +33,7 @@ export default function Vote({ roomCode, playerName, isHost, onResults }) {
 
   useEffect(() => {
     if (!spy || players.length === 0) return;
+    if (!isHost) return;
     if (allVotesCast(votes, players, spy)) {
       const result = calculateVoteResult(votes, spy, players);
       update(ref(db, `rooms/${roomCode}`), {
@@ -38,7 +42,7 @@ export default function Vote({ roomCode, playerName, isHost, onResults }) {
         votedOut: result.votedOut,
       });
     }
-  }, [votes, players, spy]);
+  }, [votes, players, spy, isHost]);
 
   const handleVote = async () => {
     if (!selected || hasVoted) return;

@@ -31,7 +31,6 @@ export default function Join({ playerName, setPlayerName, roomCode, setRoomCode,
       const snap = await get(ref(db, `rooms/${code}`));
       if (!snap.exists()) { setError(t("join.roomNotFound")); setLoading(false); return; }
       const room = snap.val();
-      if (room.status !== "waiting") { setError(t("join.gameStarted")); setLoading(false); return; }
 
       const existingPlayers = Object.keys(room.players || {});
       const normalizedPlayerName = playerName.trim().toLowerCase();

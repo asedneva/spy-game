@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ref, onValue, update } from "firebase/database";
+import { ref, onValue, update, onDisconnect } from "firebase/database";
 import { db } from "../firebase";
 import { translateLocation } from "../locations";
 import heroLogo from "../assets/hero.png";
@@ -102,6 +102,9 @@ export default function Game({ roomCode, playerName, isHost, onEndGame, onVote }
   const { t, language } = useLanguage();
 
   useEffect(() => {
+    const presenceRef = ref(db, `rooms/${roomCode}/players/${playerName}`);
+    onDisconnect(presenceRef).remove();
+
     const unsub = onValue(ref(db, `rooms/${roomCode}`), snap => {
       if (!snap.exists()) return;
       const r = snap.val();

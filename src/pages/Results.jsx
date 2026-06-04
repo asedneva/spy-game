@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { ref, onValue, update } from "firebase/database";
+import { ref, onValue, update, get, onDisconnect } from "firebase/database";
 import { db } from "../firebase";
 import { pickLocation, pickSpy } from "../gameUtils";
 import { translateLocation } from "../locations";
@@ -32,6 +32,9 @@ export default function Results({ roomCode, playerName, isHost, onNewRound, onEn
   const { t, language } = useLanguage();
 
   useEffect(() => {
+    const presenceRef = ref(db, `rooms/${roomCode}/players/${playerName}`);
+    onDisconnect(presenceRef).remove();
+
     const unsub = onValue(ref(db, `rooms/${roomCode}`), snap => {
       if (!snap.exists()) return;
       const r = snap.val();
@@ -52,8 +55,12 @@ export default function Results({ roomCode, playerName, isHost, onNewRound, onEn
   }, [roomCode]);
 
   const handleNewRound = async () => {
-    const players = Object.keys(room.players || {});
+    const snap = await get(ref(db, `rooms/${roomCode}/players`));
+    const players = snap.exists() ? Object.keys(snap.val()) : [];
+    if (players.length === 0) return;
+    if (players.length < 3) return;
     const spy = pickSpy(players);
+    if (!spy) { console.error("pickSpy returned falsy — aborting new round"); return; }
     const usedLocations = room.usedLocations || [];
     const location = pickLocation(usedLocations);
     await update(ref(db, `rooms/${roomCode}`), {
@@ -162,7 +169,26 @@ export default function Results({ roomCode, playerName, isHost, onNewRound, onEn
 
         {isHost ? (
           <div style={styles.btnRow}>
-            <button style={styles.btnPrimary} onClick={handleNewRound}>▶ {t("results.newRound")}</button>
+            {(() => {
+              const playerCount = Object.keys(room.players || {}).length;
+              const tooFewPlayers = playerCount < 3;
+              return (
+                <>
+                  {tooFewPlayers && (
+                    <p style={{ color: "#f87171", fontSize: "0.875rem", margin: 0, textAlign: "center" }}>
+                      Not enough players to start a new round (minimum 3). Waiting for players to join.
+                    </p>
+                  )}
+                  <button
+                    style={{ ...styles.btnPrimary, opacity: tooFewPlayers ? 0.4 : 1 }}
+                    onClick={handleNewRound}
+                    disabled={tooFewPlayers}
+                  >
+                    ▶ {t("results.newRound")}
+                  </button>
+                </>
+              );
+            })()}
             <button style={styles.btnOutline} onClick={handleEndGame}>{t("results.endGame")}</button>
           </div>
         ) : (

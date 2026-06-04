@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { ref, onValue, update, get } from "firebase/database";
+import { useEffect, useState, useRef } from "react";
+import { ref, onValue, update, get, onDisconnect, remove } from "firebase/database";
 import { db } from "../firebase";
 import { pickLocation, pickSpy } from "../gameUtils";
 import heroLogo from "../assets/hero.png";
@@ -11,9 +11,14 @@ export default function Lobby({ roomCode, playerName, isHost, onStartGame }) {
   const [timerMinutes, setTimerMinutes] = useState(7);
   const [codeCopied, setCodeCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [notification, setNotification] = useState("");
+  const prevPlayersRef = useRef(null);
   const { t } = useLanguage();
 
   useEffect(() => {
+    const presenceRef = ref(db, `rooms/${roomCode}/players/${playerName}`);
+    onDisconnect(presenceRef).remove();
+
     const roomRef = ref(db, `rooms/${roomCode}`);
     const unsub = onValue(roomRef, snap => {
       if (!snap.exists()) return;
@@ -26,6 +31,17 @@ export default function Lobby({ roomCode, playerName, isHost, onStartGame }) {
       setPlayers(playerList);
       setStatus(room.status);
       if (room.timerDuration) setTimerMinutes(Math.round(room.timerDuration / 60));
+
+      if (isHost && prevPlayersRef.current !== null) {
+        const currentNames = new Set(playerList.map(p => p.name));
+        const missing = prevPlayersRef.current.filter(n => !currentNames.has(n));
+        if (missing.length > 0) {
+          const msg = `${missing[0]} has left the game.`;
+          setNotification(msg);
+          setTimeout(() => setNotification(""), 4000);
+        }
+      }
+      prevPlayersRef.current = playerList.map(p => p.name);
     });
     return () => unsub();
   }, [roomCode]);
@@ -118,6 +134,12 @@ export default function Lobby({ roomCode, playerName, isHost, onStartGame }) {
         )}
 
         <div style={{ width: "100%" }}>
+          {notification ? (
+            <div style={{ background: "#7f1d1d", border: "1px solid #ef4444", borderRadius: 8, padding: "0.625rem 1rem", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ color: "#fca5a5", fontSize: "0.875rem" }}>{notification}</span>
+              <button onClick={() => setNotification("")} style={{ background: "none", border: "none", color: "#fca5a5", cursor: "pointer", fontSize: "1rem", padding: 0 }}>✕</button>
+            </div>
+          ) : null}
           <div style={styles.playersHeader}>
             <div style={styles.playersTitle}>
               <span>👥</span>
